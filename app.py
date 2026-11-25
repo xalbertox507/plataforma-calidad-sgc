@@ -181,8 +181,7 @@ if "empresa" not in st.session_state:
 # --- FUNCIONES DE CÁLCULO ESTADÍSTICO ---
 def parse_datos_proceso(texto):
     try:
-        vals = [float(x.strip()) for x in texto.replace("
-", ",").split(",") if x.strip() != ""]
+        vals = [float(x.strip()) for x in texto.replace("\n", ",").split(",") if x.strip() != ""]
         return np.array(vals)
     except Exception:
         return np.array([])
@@ -281,20 +280,11 @@ def generar_pdf_bytes(tipo):
     elif tipo == 2:
         pdf.seccion("1. Carta de Proyecto Six Sigma (DMAIC)")
         d = st.session_state.dmaic
-        pdf.parrafo(f"Proyecto: {d['titulo']}
-Objetivo: {d['objetivo']}
-Equipo: {d['equipo']}
-Cronograma: {d['cronograma']}
-Beneficios Esperados: {d['beneficios']}
-Fase Actual: {d['fase_actual']}")
+        pdf.parrafo(f"Proyecto: {d['titulo']}\nObjetivo: {d['objetivo']}\nEquipo: {d['equipo']}\nCronograma: {d['cronograma']}\nBeneficios Esperados: {d['beneficios']}\nFase Actual: {d['fase_actual']}")
 
         pdf.seccion("2. Estado de Proyectos Ciclo PHVA (PDCA) y Prueba Piloto")
         for _, r in st.session_state.pdca_df.iterrows():
-            pdf.parrafo(f"Proyecto: {r['Proyecto']} [Estado: {r['Estado']}]
-  - Planificar: {r['Planificar (P)']}
-  - Hacer (Piloto): {r['Hacer (H - Piloto)']}
-  - Verificar: {r['Verificar (V)']}
-  - Actuar: {r['Actuar (A)']}")
+            pdf.parrafo(f"Proyecto: {r['Proyecto']} [Estado: {r['Estado']}]\n  - Planificar: {r['Planificar (P)']}\n  - Hacer (Piloto): {r['Hacer (H - Piloto)']}\n  - Verificar: {r['Verificar (V)']}\n  - Actuar: {r['Actuar (A)']}")
 
     elif tipo == 3:
         datos = parse_datos_proceso(st.session_state.proceso_datos)
@@ -308,16 +298,14 @@ Fase Actual: {d['fase_actual']}")
             pdf.seccion("2. Interpretación Técnica y Decisión")
             interp = "PROCESO CAPAZ (Cpk >= 1.33): El método estandarizado cumple especificaciones con margen seguro." if res['cpk'] >= 1.33 else ("CAPACIDAD MARGINAL (1.00 <= Cpk < 1.33): Requiere monitoreo estricto." if res['cpk'] >= 1.0 else "PROCESO NO CAPAZ (Cpk < 1.00): Alta generación de defectos; requiere intervención inmediata sobre el método.")
             causa = "Se detectaron puntos fuera de control estadístico (Variabilidad de Causa Especial): investigar eventos puntuales." if res['fuera_control'] > 0 else "Proceso estadísticamente estable (solo Variabilidad de Causa Común inherente al método)."
-            pdf.parrafo(interp + "
-" + causa)
+            pdf.parrafo(interp + "\n" + causa)
         else:
             pdf.parrafo("Datos insuficientes para calcular capacidad.")
 
     elif tipo == 4:
         pdf.seccion("1. Hallazgos de Auditoría de Cumplimiento")
         for _, r in st.session_state.auditorias_df.iterrows():
-            pdf.parrafo(f"- [{r['ID']}] ({r['Fecha']} - {r['Área']}): {r['Hallazgo']}
-  Clasificación: {r['Clasificación']} | Acción: {r['Acción Correctiva']} | Resp: {r['Responsable']} [{r['Estado']}]")
+            pdf.parrafo(f"- [{r['ID']}] ({r['Fecha']} - {r['Área']}): {r['Hallazgo']}\n  Clasificación: {r['Clasificación']} | Acción: {r['Acción Correctiva']} | Resp: {r['Responsable']} [{r['Estado']}]")
         pdf.seccion("2. Resumen del Método Estandarizado Vigente")
         for _, r in st.session_state.estandar_df.iterrows():
             pdf.parrafo(f"Paso {r['Paso']}: {r['Actividad']} ({r['Tiempo Estándar (s)']}s) - Criterio: {r['Criterio Calidad']}")
@@ -348,19 +336,11 @@ Fase Actual: {d['fase_actual']}")
         pdf.seccion("1. Propósito de la Aplicación y Usuarios")
         pdf.parrafo("Esta plataforma digital integra la Gestión de la Calidad (ISO 9001), la Mejora Continua (PDCA, DMAIC, Kaizen, 5S), la Gestión del Cambio Organizacional y la Sostenibilidad (Estandarización, Auditorías y KPIs) en un único sistema ágil y basado en datos objetivos. Está diseñada para Gerentes de Operaciones, Ingenieros de Métodos, Líderes de Calidad, Supervisores y Operarios.")
         pdf.seccion("2. Cómo Empezar: Caso de Demostración vs. Datos Propios")
-        pdf.parrafo("- Al abrir la aplicación, se carga automáticamente el caso de estudio 'Plásticos Industriales del Norte'.
-- En el panel izquierdo (Barra Lateral), puede editar el nombre de su empresa, el responsable, limpiar los datos de ejemplo ('Limpiar / Iniciar en Blanco') o restaurar la demostración en cualquier momento.
-- Todas las tablas son editables directamente haciendo clic sobre las celdas, y los gráficos e índices se recalculan instantáneamente.")
+        pdf.parrafo("- Al abrir la aplicación, se carga automáticamente el caso de estudio 'Plásticos Industriales del Norte'.\n- En el panel izquierdo (Barra Lateral), puede editar el nombre de su empresa, el responsable, limpiar los datos de ejemplo ('Limpiar / Iniciar en Blanco') o restaurar la demostración en cualquier momento.\n- Todas las tablas son editables directamente haciendo clic sobre las celdas, y los gráficos e índices se recalculan instantáneamente.")
         pdf.seccion("3. Recorrido por los 4 Módulos")
-        pdf.parrafo("- Módulo A (Calidad): Registre la Voz del Cliente (interno/externo), gestione documentos ISO 9001 y analice Pareto, Ishikawa 6M, Hoja de Verificación, Histograma y Gráfico de Control.
-- Módulo B (Mejora Continua): Administre proyectos PDCA con prueba piloto, cartas DMAIC, buzón Kaizen, cálculo automático de Cp/Cpk y auditoría 5S.
-- Módulo C (Gestión del Cambio): Controle las 5 fases de implementación, el mapa de stakeholders y el patrocinio ejecutivo.
-- Módulo D (Sostenibilidad): Documente fichas de trabajo estándar, registre hallazgos de auditoría (separando desempeño del trabajador vs. limitación del método) y monitoree alertas KPI.")
+        pdf.parrafo("- Módulo A (Calidad): Registre la Voz del Cliente (interno/externo), gestione documentos ISO 9001 y analice Pareto, Ishikawa 6M, Hoja de Verificación, Histograma y Gráfico de Control.\n- Módulo B (Mejora Continua): Administre proyectos PDCA con prueba piloto, cartas DMAIC, buzón Kaizen, cálculo automático de Cp/Cpk y auditoría 5S.\n- Módulo C (Gestión del Cambio): Controle las 5 fases de implementación, el mapa de stakeholders y el patrocinio ejecutivo.\n- Módulo D (Sostenibilidad): Documente fichas de trabajo estándar, registre hallazgos de auditoría (separando desempeño del trabajador vs. limitación del método) y monitoree alertas KPI.")
         pdf.seccion("4. Interpretación de Resultados Clave")
-        pdf.parrafo("- Índice Cpk < 1.00: El proceso no es capaz y genera defectos fuera de especificación.
-- Índice 1.00 <= Cpk < 1.33: Proceso mínimamente capaz, requiere control estrecho.
-- Índice Cpk >= 1.33: Proceso capaz y centrado (estándar Six Sigma/industrial).
-- Causa Común vs. Causa Especial: Puntos dentro de los límites LCS/LCI reflejan variación natural del método; puntos fuera de límites indican eventos puntuales (causa especial) a investigar.")
+        pdf.parrafo("- Índice Cpk < 1.00: El proceso no es capaz y genera defectos fuera de especificación.\n- Índice 1.00 <= Cpk < 1.33: Proceso mínimamente capaz, requiere control estrecho.\n- Índice Cpk >= 1.33: Proceso capaz y centrado (estándar Six Sigma/industrial).\n- Causa Común vs. Causa Especial: Puntos dentro de los límites LCS/LCI reflejan variación natural del método; puntos fuera de límites indican eventos puntuales (causa especial) a investigar.")
         pdf.seccion("5. Descarga de Informes y Solución de Problemas")
         pdf.parrafo("En la barra lateral izquierda o en la pestaña 'Centro de Informes PDF' puede descargar los 6 informes ejecutivos y este manual en formato PDF con un solo clic. Si un gráfico no se actualiza tras editar una tabla, presione Enter fuera de la celda editada.")
 
@@ -396,9 +376,7 @@ with st.sidebar:
         use_container_width=True
     )
     with st.expander("Ver Guía Rápida Aquí"):
-        st.caption("1. Navegue por los 4 módulos en las pestañas superiores.
-2. Edite cualquier tabla o dato numérico: las gráficas y Cpk se recalculan solos.
-3. Descargue los 6 informes PDF listos para gerencia en la última pestaña.")
+        st.caption("1. Navegue por los 4 módulos en las pestañas superiores.\n2. Edite cualquier tabla o dato numérico: las gráficas y Cpk se recalculan solos.\n3. Descargue los 6 informes PDF listos para gerencia en la última pestaña.")
 
 # --- ENCABEZADO PRINCIPAL ---
 st.markdown('<div class="main-header">Plataforma Digital de Gestión de Calidad, Mejora Continua y Cambio</div>', unsafe_allow_html=True)
